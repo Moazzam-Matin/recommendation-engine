@@ -15,7 +15,41 @@ Real-time e-commerce recommendation engine with:
 [To be filled in]
 
 ### 2. Recommendation Models
-[To be filled in]
+
+**Question:** Which algorithms - collaborative only, content-based only, or hybrid?
+
+**Decision:** Hybrid Approach (Collaborative + Content-Based)
+
+**Reasoning:**
+- Combines strengths of both approaches
+- Better accuracy than either alone
+- Shows production ML thinking
+- Handles both user similarity and product similarity
+- More sophisticated for portfolio/interviews
+
+**Implementation Plan:**
+
+**Collaborative Filtering (60% weight):**
+- User-based similarity using cosine distance
+- Find similar users, recommend their rated movies
+- Tech: scikit-learn cosine_similarity, KNN
+- Fast, scalable approach
+
+**Content-Based Filtering (40% weight):**
+- Movie similarity using genres and metadata
+- Recommend movies similar to user's history
+- Tech: TF-IDF for genre matching
+- Handles cold-start problem for new movies
+
+**Hybrid Combination:**
+- Score = 0.6 * collaborative_score + 0.4 * content_score
+- Blend both scores for final recommendation ranking
+- Allows for weight tuning based on performance
+
+**Model Evaluation:**
+- Test on MovieLens data: precision, recall, RMSE
+- Compare pure collaborative vs pure content vs hybrid
+- Use MLflow to track different model versions
 
 ### 3. Real-Time API
 [To be filled in]
