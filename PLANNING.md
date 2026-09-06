@@ -465,4 +465,37 @@ README.md
 
 ---
 
+### Decision 2: Collaborative Filtering Approach
+
+**Question:** User-based or item-based collaborative filtering?
+
+**Decision:** Item-based collaborative filtering
+
+**Reasoning:**
+- User-based CF requires recomputing user-user similarity as ratings arrive, which does not scale as the user base grows
+- Item-based CF computes movie-movie similarity once; item relationships (e.g. "Toy Story" is similar to "Toy Story 2") change far less often than a user's taste profile
+- Similarity matrix can be precomputed offline and cached, giving fast lookups at serving time instead of recomputing per request
+- Matches what production recommendation systems actually use at scale (e.g. Amazon's early item-to-item CF), making it a stronger interview talking point than user-based
+
+**Implementation Note:**
+- Compute cosine similarity over the item x user rating matrix (movies as rows) instead of user x item
+- Precompute and cache the top-N similar movies per movie ahead of serving
+
+---
+
+### Decision 3: Feature Store Technology
+
+**Question:** PostgreSQL or DuckDB for the feature store?
+
+**Decision:** DuckDB
+
+**Reasoning:**
+- Embedded, in-process database — no separate server to install, run, or document in setup instructions
+- Fast for the analytical (OLAP-style) queries a feature store needs: aggregations and joins across users, movies, and ratings
+- Still uses real SQL, so it demonstrates SQL proficiency without adding a client-server dependency
+- Lower operational overhead for a solo portfolio project than running and maintaining a PostgreSQL instance
+- PostgreSQL would be the better choice if the goal were specifically to demonstrate client-server database administration, which is not the focus of this project
+
+---
+
 Last updated: 05-Sept-2026
