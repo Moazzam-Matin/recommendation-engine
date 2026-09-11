@@ -1,6 +1,8 @@
 # Raw data - download separately, see README
 data/raw/
 
+notebooks/data/processed/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
