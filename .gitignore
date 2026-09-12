@@ -1,7 +1,13 @@
 # Raw data - download separately, see README
 data/raw/
 
-notebooks/data/processed/
+# Data files
+notebooks/data/processed/*.pkl
+notebooks/data/processed/*.csv
+notebooks/data/processed/*.parquet
+
+# Keep metadata
+!data/processed/metadata.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
