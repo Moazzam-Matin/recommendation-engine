@@ -1,6 +1,11 @@
 # Raw data - download separately, see README
 data/raw/
 
+#maarg files
+notebooks/.maarg/
+notebooks/.maarg_cache/
+notebooks/artifacts/
+
 # Data files
 notebooks/data/processed/*.pkl
 notebooks/data/processed/*.csv
