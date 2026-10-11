@@ -2,6 +2,7 @@
 
 import math
 
+import numpy as np
 import pandas as pd
 
 REQUIRED_COLUMNS = {"UserID", "MovieId", "Rating"}
@@ -23,6 +24,8 @@ def prepare_ratings(ratings: pd.DataFrame) -> pd.DataFrame:
     if ratings.empty:
         raise ValueError("ratings must not be empty.")
 
+    ratings = ratings[["UserID", "MovieID", "Rating"]].copy()
+
     if ratings.isnull().any().any():
         raise ValueError("ratings must not contain missing values in UserID, MovieId and Rating.")
 
@@ -38,10 +41,11 @@ def prepare_ratings(ratings: pd.DataFrame) -> pd.DataFrame:
     if not ratings["Rating"].between(1, 5).all():
          raise ValueError("ratings must be between 1 and 5.")
 
+     # Combine duplicate ratings for the same user and movie and calculate their average.
     ratings = (
          ratings.groupby(
               ["UserID", "MovieID"],
-              as_index = False,
+              as_index = False, #as_index=False keeps UserID and MovieID as ordinary columns.
               sort = True
          )["Rating"].mean()
     )
@@ -56,8 +60,7 @@ def split_ratings(
             test_fraction: float = 0.2, 
             random_state: int = 42, 
             ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Create a reproducible per-user train/test split.
+    """Create a reproducible per-user train/test split.
 
     Duplicate user-movie pairs are aggregated before eligibility is checked. 
     Users with fewer than min_user_ratings unique movies are excluded. 
@@ -81,13 +84,13 @@ def split_ratings(
 
     prepared = prepare_ratings(ratings)
 
-    user_counts = prepared.groupby("UserId")["MovieID"].transform("size")
+    user_counts = prepared.groupby("UserID")["MovieID"].transform("size")
     eligible = prepared.loc[user_counts >= min_user_ratings].copy()
 
     if eligible.empty:
          raise ValueError("No user meet the minimum unique-rating threshold.")
 
-    rng = __import__("numpy").random.default_rnf(random_state)
+    rng = np.random.default_rnf(random_state)
     train_parts = []
     test_parts = []
 
