@@ -1,6 +1,5 @@
 """Data Prepration and splitting utilities for offline evaluation"""
-
-from recommendation_engine.models.collaborative import ItemBasedCollaborativeFilter
+from __future__ import annotations
 
 import math
 
@@ -193,7 +192,7 @@ def evaluate_model(
     test_ratings,
     *,
     k_values=(5, 10, 20),
-    full_ratings=None,
+    full_ratings: pd.DataFrame |None =None,
 ):
     """Evaluate a recommendation model using held-out ratings."""
     train = prepare_ratings(train_ratings)
@@ -279,7 +278,7 @@ def evaluate_model(
 
             recommendations_by_user[user_id] = recommendations
 
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             # Keep the user in the evaluation population, even if
             # recommendation generation fails.
             recommendations_by_user[user_id] = []
@@ -349,6 +348,12 @@ def evaluate_model(
             ),
             "completion": float(np.mean(completions)),
             "full_list_rate": users_with_full_lists / len(test_users),
+            "users": {
+                "precision": len(precisions),
+                "recall": len(recalls),
+                "ndcg": len(ndcgs),
+                "completion": len(completions),
+            },
         }
 
         diagnostics_by_k[k] = {

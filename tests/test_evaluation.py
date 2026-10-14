@@ -1,9 +1,18 @@
 
+from unittest.mock import Mock
+
 import numpy as np
 import pandas as pd
 import pytest
 
-from recommendation_engine.evaluation import prepare_ratings, split_ratings, precision_at_k, recall_at_k,ndcg_at_k
+from recommendation_engine.evaluation import (
+    evaluate_model,
+    ndcg_at_k,
+    precision_at_k,
+    prepare_ratings,
+    recall_at_k,
+    split_ratings,
+)
 
 # --------------------------------------------------
 # prepare_ratings() tests
@@ -246,7 +255,7 @@ def test_split_ratings_preserves_all_eligible_pairs():
 def test_split_ratings_uses_expected_test_count():
     ratings = make_split_test_data()
 
-    train, test = split_ratings(ratings)
+    _, test = split_ratings(ratings)
 
     # User 1: floor(10 * 0.2) = 2 test ratings.
     # User 2: floor(5 * 0.2) = 1 test rating.
@@ -522,3 +531,176 @@ def test_ndcg_at_k_rejects_non_positive_k():
 
     with pytest.raises(ValueError, match="k must be greater than 0"):
         ndcg_at_k([101], {101}, k=0)
+
+
+def make_evaluation_data():
+    """Create a small dataset for testing model evaluation."""
+    train = pd.DataFrame(
+        [
+            (1, 101, 5.0),
+            (1, 102, 4.0),
+            (2, 101, 4.0),
+            (2, 103, 3.0),
+        ],
+        columns=["UserID", "MovieID", "Rating"],
+    )
+
+    test = pd.DataFrame(
+        [
+            (1, 103, 5.0),
+            (1, 104, 2.0),
+            (2, 102, 3.0),
+            (2, 104, 2.0),
+        ],
+        columns=["UserID", "MovieID", "Rating"],
+    )
+
+    full = pd.concat([train, test], ignore_index=True)
+    return train, test, full
+
+
+def test_evaluate_model_fits_only_training_data():
+    train, test, full = make_evaluation_data()
+    model = Mock()
+    model.recommend.return_value = [103, 104]
+
+    evaluate_model(
+        model,
+        train,
+        test,
+        k_values=(1, 2),
+        full_ratings=full,
+    )
+
+    fitted_data = model.fit.call_args.args[0]
+    pd.testing.assert_frame_equal(
+        fitted_data.reset_index(drop=True),
+        train.reset_index(drop=True),
+    )
+
+
+def test_evaluate_model_returns_metrics_and_denominators():
+    train, test, full = make_evaluation_data()
+    model = Mock()
+    model.recommend.return_value = [103, 104]
+
+    result = evaluate_model(
+        model,
+        train,
+        test,
+        k_values=(1, 2),
+        full_ratings=full,
+    )
+
+    assert set(result["metrics"]) == {1, 2}
+
+    for k in (1, 2):
+        metrics = result["metrics"][k]
+
+        assert metrics["users"] == {
+            "precision": 2,
+            "recall": 1,
+            "ndcg": 1,
+            "completion": 2,
+        }
+
+    assert result["population"]["users_evaluated"] == 2
+    assert result["population"]["users_with_relevant_test_items"] == 1
+
+
+def test_evaluate_model_uses_full_catalog_for_coverage():
+    train, test, full = make_evaluation_data()
+
+    # Movie 999 is in the full catalog but not in this evaluation split.
+    extra_movie = pd.DataFrame(
+        [(99, 999, 5.0)],
+        columns=["UserID", "MovieID", "Rating"],
+    )
+    full = pd.concat([full, extra_movie], ignore_index=True)
+
+    model = Mock()
+    model.recommend.return_value = [103]
+
+    result = evaluate_model(
+        model,
+        train,
+        test,
+        k_values=(1,),
+        full_ratings=full,
+    )
+
+    assert result["population"]["catalog_size"] == 5
+    assert result["metrics"][1]["catalog_coverage"] == 20.0
+
+
+def test_evaluate_model_records_recommendation_failures():
+    train, test, full = make_evaluation_data()
+    model = Mock()
+    model.recommend.side_effect = ValueError("Unknown user")
+
+    result = evaluate_model(
+        model,
+        train,
+        test,
+        k_values=(1,),
+        full_ratings=full,
+    )
+
+    assert result["diagnostics"]["recommendation_errors"] == {
+        "ValueError": 2
+    }
+    assert result["diagnostics"]["users_with_empty_recommendations"] == 2
+    assert result["metrics"][1]["precision"] == 0.0
+    assert result["metrics"][1]["users"]["precision"] == 2
+
+
+def test_evaluate_model_rejects_overlapping_train_and_test():
+    train, test, full = make_evaluation_data()
+    overlapping_test = pd.concat(
+        [test, train.iloc[[0]]],
+        ignore_index=True,
+    )
+
+    model = Mock()
+
+    with pytest.raises(ValueError, match="overlapping"):
+        evaluate_model(
+            model,
+            train,
+            overlapping_test,
+            k_values=(1,),
+            full_ratings=full,
+        )
+
+    model.fit.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "k_values",
+    [(0,), (-1,), (), (1, 1)],
+)
+def test_evaluate_model_rejects_invalid_k_values(k_values):
+    train, test, full = make_evaluation_data()
+
+    with pytest.raises(ValueError):
+        evaluate_model(
+            Mock(),
+            train,
+            test,
+            k_values=k_values,
+            full_ratings=full,
+        )
+
+
+def test_evaluate_model_rejects_non_integer_k():
+    train, test, full = make_evaluation_data()
+
+    with pytest.raises(TypeError):
+        evaluate_model(
+            Mock(),
+            train,
+            test,
+            k_values=(1.5,),
+            full_ratings=full,
+        )
+
