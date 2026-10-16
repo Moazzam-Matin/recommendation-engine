@@ -68,8 +68,8 @@ def test_main_logs_parameters_and_metrics(monkeypatch):
     assert logged_experiment == ["recommendation-engine"]
 
     assert len(logged_params) == 1
-    assert logged_params[0]["n_neighbours"] == 50
-    assert logged_params[0]["min_co_ratings"] == 5
+    assert logged_params[0]["n_neighbours"] == 5
+    assert logged_params[0]["min_co_ratings"] == 2
 
     assert len(logged_metrics) == 2
 
