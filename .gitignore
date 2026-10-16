@@ -1,7 +1,21 @@
 # Raw data - download separately, see README
 data/raw/
 
-#maarg files
+# maarg tracking data (local only)
+.maarg/
+.maarg_cache/
+artifacts/
+
+# MLflow local tracking data
+mlflow.db
+mlflow.db-shm
+mlflow.db-wal
+mlruns/
+
+# Temporary maarg API verification script
+scripts/maarg_api_check.py
+
+# Legacy notebook-local tracking data
 notebooks/.maarg/
 notebooks/.maarg_cache/
 notebooks/artifacts/
