@@ -61,6 +61,10 @@ def run_experiment(
         k_values=(5, 10, 20),
         full_ratings=ratings,
     )
+    model_path = PROJECT_ROOT / "artifacts" / "cf_model.joblib"
+    model.save(model_path)
+
+    print(f"\nSaved trained model to: {model_path}")
 
     print("\n=== BASELINE RESULTS ===")
     pprint.pprint(results, sort_dicts=False, width=100)
@@ -79,6 +83,8 @@ def main() -> None:
         }
         mlflow.log_params(params)
         results = run_experiment(**params)
+        model_path = PROJECT_ROOT / "artifacts" / "cf_model.joblib"
+        mlflow.log_artifact(str(model_path))
         mlflow.log_metrics({
             "users_evaluated": results["population"]["users_evaluated"],
             "users_with_relevant_test_items": results["population"]["users_with_relevant_test_items"],

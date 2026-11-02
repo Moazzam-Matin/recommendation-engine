@@ -1,9 +1,13 @@
+from pathlib import Path
+
+import joblib
 import pandas as pd
 from scipy.sparse import csr_matrix
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics.pairwise import cosine_similarity
 
-
+class UnknownUserError(ValueError):
+    """Raised when a user ID is not present in the fitted model."""
 class ItemBasedCollaborativeFilter:
     """ Item-Based Collaboratve filtering recommendation model."""
 
@@ -146,7 +150,7 @@ class ItemBasedCollaborativeFilter:
             raise ValueError("n must be greater than 0.")
 
         if user_id not in self._user_to_index:
-            raise ValueError(f"Unknown user id: {user_id}")
+            raise UnknownUserError(f"Unknown user id: {user_id}")
 
         user_ratings = self._ratings[
             self._ratings["UserID"] == user_id
@@ -184,7 +188,30 @@ class ItemBasedCollaborativeFilter:
         return [movie_id for movie_id, _ in ranked_candidates[:n]]
 
 
+    def save(self, path):
+        """Saves the fitted model to path"""
 
+        if not self._is_fitted:
+            raise NotFittedError("The model must be fitted before it can be saved")
+
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        joblib.dump(self,path)
+
+    @classmethod
+    def load(cls, path):
+        """Load a saved model from disk"""
+
+        model = joblib.load(path)
+
+        if not isinstance(model, cls):
+            raise TypeError(f"The saved model is not a {cls.__name__} model.")
+
+        if not model._is_fitted:
+            raise NotFittedError("The saved model is not fitted")
+
+        return model
 
 
 

@@ -137,7 +137,7 @@ The tracking location depends on the project's MLflow configuration.
 The evaluation workflow measures recommendation quality at different values of K.
 
 | Metric | What it measures |
-|---|---|
+| --- | --- |
 | Precision@K | The proportion of recommended items that are relevant |
 | Recall@K | The proportion of relevant held-out items that are recommended |
 | NDCG@K | Recommendation quality while accounting for ranking position |
@@ -150,14 +150,14 @@ Additional diagnostics examine whether users receive complete recommendation lis
 The current baseline uses the following configuration:
 
 | Parameter | Value |
-|---|---:|
+| --- | ---: |
 | `n_neighbours` | 5 |
 | `min_co_ratings` | 2 |
 
 In the recorded evaluation, the model produced these results:
 
 | Metric | K = 5 | K = 10 | K = 20 |
-|---|---:|---:|---:|
+| --- | ---: | ---: | ---: |
 | Precision@K | 0.0616 | 0.0587 | 0.0624 |
 | Recall@K | 0.0253 | 0.0500 | 0.1061 |
 | NDCG@K | 0.0675 | 0.0707 | 0.0899 |
@@ -197,7 +197,7 @@ These are planned extensions rather than claims about current functionality.
 
 ## Author
 
-**Moazzam Matin**
+**Moazzam Matin:**
 
 - GitHub: [Moazzam-Matin](https://github.com/Moazzam-Matin)
 - Repository: [recommendation-engine](https://github.com/Moazzam-Matin/recommendation-engine)

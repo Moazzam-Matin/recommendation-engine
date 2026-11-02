@@ -134,3 +134,65 @@ def test_fit_averages_duplicate_user_movie_ratings(model, ratings):
     ].iloc[0]
 
     assert rating == 4.0
+
+def test_save_and_load_model(model, ratings, tmp_path):
+    model.fit(ratings)
+
+    model_path = tmp_path / "cf_model.joblib"
+
+    model.save(model_path)
+
+    loaded_model = ItemBasedCollaborativeFilter.load(model_path)
+
+    assert isinstance(loaded_model, ItemBasedCollaborativeFilter)
+    assert loaded_model._is_fitted is True
+
+def test_loaded_model_produces_same_recommendations(model, ratings, tmp_path):
+    model.fit(ratings)
+
+    original_recommendations = model.recommend(user_id=1, n=2)
+
+    model_path = tmp_path / "cf_model.joblib"
+    model.save(model_path)
+
+    loaded_model = ItemBasedCollaborativeFilter.load(model_path)
+
+    loaded_recommendations = loaded_model.recommend(user_id=1, n=2)
+
+    assert loaded_recommendations == original_recommendations
+
+def test_save_requires_fitted_model(model, tmp_path):
+    model_path = tmp_path / "cf_model.joblib"
+
+    with pytest.raises(
+        NotFittedError,
+        match="The model must be fitted before it can be saved",
+    ):
+        model.save(model_path)
+
+
+def test_load_rejects_wrong_object_type(tmp_path):
+    import joblib
+
+    model_path = tmp_path / "wrong_model.joblib"
+
+    joblib.dump({"model": "not a recommender"}, model_path)
+
+    with pytest.raises(
+        TypeError,
+        match="The saved model is not a ItemBasedCollaborativeFilter model",
+    ):
+        ItemBasedCollaborativeFilter.load(model_path)
+
+
+def test_load_rejects_unfitted_model(model, tmp_path):
+    model_path = tmp_path / "unfitted_model.joblib"
+
+    import joblib
+    joblib.dump(model, model_path)
+
+    with pytest.raises(
+        NotFittedError,
+        match="The saved model is not fitted",
+    ):
+        ItemBasedCollaborativeFilter.load(model_path)
