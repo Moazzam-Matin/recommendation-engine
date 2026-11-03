@@ -6,6 +6,7 @@ from scipy.sparse import csr_matrix
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics.pairwise import cosine_similarity
 
+
 class UnknownUserError(ValueError):
     """Raised when a user ID is not present in the fitted model."""
 class ItemBasedCollaborativeFilter:

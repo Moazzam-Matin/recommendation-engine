@@ -1,0 +1,48 @@
+# Git
+.git/
+
+# Python environments
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Testing and code quality
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.nox/
+.coverage
+htmlcov/
+
+# Development files
+notebooks/
+tests/
+scripts/
+
+# Training data
+data/
+
+# MLflow
+mlruns/
+mlflow.db*
+
+# maarg tracking data
+.maarg/
+.maarg_cache/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -13,7 +14,11 @@ from recommendation_engine.models.collaborative import (
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     project_root = Path(__file__).resolve().parents[3]
-    model_path = project_root / "artifacts" / "cf_model.joblib"
+    default_model_path = project_root / "artifacts" / "cf_model.joblib"
+
+    model_path = Path(
+        os.getenv("MODEL_PATH", default_model_path)
+    )
 
     app.state.model = ItemBasedCollaborativeFilter.load(model_path)
 
