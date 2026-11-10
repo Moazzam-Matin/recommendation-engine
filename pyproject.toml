@@ -21,6 +21,7 @@ dependencies = [
 dev = [
     "pytest>=8.0.0",
     "httpx2>=1.0.0",
+    "mlflow",
 ]
 
 [tool.setuptools.packages.find]
