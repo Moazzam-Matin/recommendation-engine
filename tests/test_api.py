@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from recommendation_engine.api.main import app
 
 
-def test_health_check():
+def test_health_check(api_model_path):
     with TestClient(app) as client:
         response = client.get("/health")
 
@@ -14,7 +14,7 @@ def test_health_check():
     }
 
 
-def test_recommendations_success():
+def test_recommendations_success(api_model_path):
     with TestClient(app) as client:
         response = client.get("/recommend/44?n=5")
 
@@ -26,7 +26,7 @@ def test_recommendations_success():
     assert len(data["recommendations"]) == 5
 
 
-def test_recommendations_unknown_user():
+def test_recommendations_unknown_user(api_model_path):
     with TestClient(app) as client:
         response = client.get("/recommend/9999999999999999")
 
@@ -36,21 +36,21 @@ def test_recommendations_unknown_user():
     }
 
 
-def test_recommendations_invalid_user_id():
+def test_recommendations_invalid_user_id(api_model_path):
     with TestClient(app) as client:
         response = client.get("/recommend/abc")
 
     assert response.status_code == 422
 
 
-def test_recommendations_invalid_n():
+def test_recommendations_invalid_n(api_model_path):
     with TestClient(app) as client:
         response = client.get("/recommend/44?n=0")
 
     assert response.status_code == 422
 
 
-def test_recommendations_n_exceeds_limit():
+def test_recommendations_n_exceeds_limit(api_model_path):
     with TestClient(app) as client:
         response = client.get("/recommend/44?n=101")
 

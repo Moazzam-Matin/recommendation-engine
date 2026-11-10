@@ -39,6 +39,12 @@ def test_main_logs_parameters_and_metrics(monkeypatch):
 
     monkeypatch.setattr(
         run_baseline.mlflow,
+        "log_artifact",
+        lambda path: None,
+    )
+
+    monkeypatch.setattr(
+        run_baseline.mlflow,
         "set_experiment",
         lambda name: logged_experiment.append(name),
     )
