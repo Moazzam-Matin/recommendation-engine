@@ -1,0 +1,7 @@
+services:
+  api:
+    build: .
+    image: recommendation-engine:latest
+    container_name: re-api
+    ports:
+      - "8000:8000"
