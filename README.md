@@ -1,18 +1,28 @@
-# Recommendation Engine
+<h1 align="center">Recommendation Engine</h1>
 
-A movie recommendation engine built with Python, featuring item-based collaborative filtering, offline evaluation, MLflow experiment tracking, model persistence, and a Dockerized FastAPI inference service.
+<p align="center">
+  <a href="https://github.com/Moazzam-Matin/recommendation-engine/actions/workflows/ci.yml">
+    <img src="https://github.com/Moazzam-Matin/recommendation-engine/actions/workflows/ci.yml/badge.svg" alt="CI">
+  </a>
+  <img src="https://img.shields.io/badge/CI%20tested-3.13%20%7C%203.14-blue" alt="Python CI tested">
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License">
+</p>
 
-The project demonstrates practical machine learning engineering workflows, from model development and evaluation to experiment tracking, testing, model serving, and containerization.
+A movie recommendation engine built with Python, demonstrating practical machine learning engineering and MLOps workflows.
+
+The project implements item-based collaborative filtering using the MovieLens 1M dataset, with offline evaluation, MLflow experiment tracking, model persistence, a FastAPI inference service, Docker containerization, automated testing, and cross-platform CI.
+
+**The goal:** demonstrate the engineering lifecycle of a machine learning application — from data preparation and model evaluation to experiment tracking, API serving, and containerization.
 
 ## Project Overview
 
-This project uses the [MovieLens 1M](https://grouplens.org/datasets/movielens/1m/) dataset to build and evaluate a movie recommendation model.
+This project uses the [MovieLens 1M dataset](https://grouplens.org/datasets/movielens/1m/) to build and evaluate a movie recommendation model.
 
 The current implementation uses **item-based collaborative filtering**. It identifies movies with similar rating patterns and recommends movies a user has not rated yet.
 
-The focus is not only on generating recommendations, but also on measuring model performance, tracking experiments, validating behavior through tests, persisting trained models, and serving recommendations through an API.
+Rather than focusing exclusively on recommendation quality, the project demonstrates the engineering practices involved in building and deploying a machine learning application.
 
-## Current Features
+## Key Features
 
 - Item-based collaborative filtering
 - Data validation and duplicate-rating aggregation
@@ -21,35 +31,75 @@ The focus is not only on generating recommendations, but also on measuring model
 - Precision@K, Recall@K, and NDCG@K
 - Catalog coverage and recommendation-completion diagnostics
 - MLflow experiment tracking
-- Model serialization and loading using joblib
+- Model serialization and loading using Joblib
 - FastAPI inference API
-- API and model tests using pytest
+- API and model testing with pytest
 - Docker image creation and containerized deployment
 - Docker Compose application management
+- GitHub Actions CI across multiple operating systems and Python versions
+
+## Architecture
+
+The project follows a simple machine learning workflow, separating model development, evaluation, persistence, and inference.
+
+```mermaid
+flowchart TD
+    A[MovieLens 1M Dataset] --> B[Data Validation and Preprocessing]
+    B --> C[Item-Based Collaborative Filtering]
+    C --> D[Offline Evaluation]
+    D --> E[MLflow Experiment Tracking]
+    C --> F[Model Persistence with Joblib]
+    F --> G[FastAPI Inference Service]
+    G --> H[Docker Container]
+    H --> I[Recommendation API]
+```
+
+**Workflow:**
+
+1. Load and validate movie-rating data.
+2. Train the item-based collaborative filtering model.
+3. Evaluate recommendations using offline metrics.
+4. Record experiment parameters and metrics with MLflow.
+5. Serialize the trained model using Joblib.
+6. Load the persisted model through the FastAPI application.
+7. Serve recommendations through a Dockerized API.
 
 ## Tech Stack
 
 | Technology | Purpose |
-| --- | --- |
+|---|---|
 | Python | Core implementation |
 | Pandas and NumPy | Data processing |
 | scikit-learn | Supporting machine learning utilities |
 | SciPy | Sparse matrix operations |
-| joblib | Model serialization and loading |
+| Joblib | Model serialization and loading |
 | MLflow | Experiment tracking |
 | FastAPI | Model serving and API endpoints |
 | Uvicorn | ASGI server |
 | Docker | Application containerization |
 | Docker Compose | Container lifecycle management |
 | pytest | Automated testing |
+| GitHub Actions | Continuous integration |
 
 ## Dataset
 
-The project uses the MovieLens 1M movie-rating dataset.
+The project uses the [MovieLens 1M dataset](https://grouplens.org/datasets/movielens/1m/).
 
-The dataset contains approximately one million ratings from 6,040 users across 3,706 movies.
+Dataset characteristics:
 
-The evaluation workflow separates ratings into training and test sets so recommendations can be assessed against held-out user preferences.
+| Property | Value |
+|---|---:|
+| Ratings | 1,000,209 |
+| Users | 6,040 |
+| Movies | 3,706 |
+
+The evaluation workflow separates the ratings into training and test sets to measure recommendation performance against held-out user preferences.
+
+| Split | Ratings |
+|---|---:|
+| Training | 802,553 |
+| Testing | 197,656 |
+| Total | 1,000,209 |
 
 ## Project Structure
 
@@ -69,17 +119,34 @@ recommendation-engine/
 │       └── models/
 │           └── collaborative.py
 ├── tests/
-├── Dockerfile
+│   ├── conftest.py
+│   ├── test_api.py
+│   ├── test_collaborative.py
+│   ├── test_evaluation.py
+│   └── test_tracking.py
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── .dockerignore
+├── .gitignore
 ├── compose.yaml
-├── requirements.txt
-├── requirements-docker.txt
+├── Dockerfile
 ├── pyproject.toml
+├── requirements-docker.txt
 └── README.md
 ```
 
-The structure highlights the main application components. Additional test files, configuration files, and supporting modules are also present.
+The structure above highlights the main application components. Additional configuration and supporting files may also be present.
+
+**Note:** The trained model artifact is generated locally and is excluded from Git. It is not included when cloning the repository.
 
 ## Getting Started
+
+### Prerequisites
+
+- Python 3.13 or 3.14
+- Git
+- MovieLens 1M dataset
 
 ### 1. Clone the repository
 
@@ -90,14 +157,14 @@ cd recommendation-engine
 
 ### 2. Create and activate a virtual environment
 
-Windows PowerShell:
+**Windows PowerShell:**
 
 ```powershell
 python -m venv venv
 .\venv\Scripts\Activate.ps1
 ```
 
-macOS or Linux:
+**macOS or Linux:**
 
 ```bash
 python -m venv venv
@@ -116,7 +183,7 @@ Ensure the MovieLens dataset is available in the location expected by the traini
 ### 4. Run the tests
 
 ```bash
-pytest -q
+python -m pytest -v
 ```
 
 The test suite covers model behavior, evaluation metrics, validation, model persistence, MLflow tracking, and API functionality.
@@ -137,7 +204,13 @@ The trained model is serialized to:
 artifacts/cf_model.joblib
 ```
 
-## Viewing MLflow Experiments
+This artifact is required by the inference API and Docker image.
+
+## Experiment Tracking with MLflow
+
+The project integrates MLflow to track machine learning experiments.
+
+Experiment runs record relevant parameters and evaluation metrics, making it possible to inspect and compare model configurations.
 
 Start the MLflow UI:
 
@@ -145,13 +218,18 @@ Start the MLflow UI:
 mlflow ui
 ```
 
-Open the address displayed in your terminal, typically:
+Open the address displayed in the terminal, typically:
 
 ```text
 http://127.0.0.1:5000
 ```
 
-The UI lets you inspect recorded runs, compare parameters and metrics, and review experiment results.
+The UI allows you to:
+
+- Inspect experiment runs.
+- Compare model parameters.
+- Review evaluation metrics.
+- Analyze results across different configurations.
 
 The tracking location depends on the project's MLflow configuration.
 
@@ -159,34 +237,34 @@ The tracking location depends on the project's MLflow configuration.
 
 The evaluation workflow measures recommendation quality at different values of K.
 
-| Metric | What it measures |
-| --- | --- |
+| Metric | Description |
+|---|---|
 | Precision@K | Proportion of recommended items that are relevant |
 | Recall@K | Proportion of relevant held-out items that are recommended |
 | NDCG@K | Recommendation quality while accounting for ranking position |
-| Catalog coverage | Proportion of the item catalog recommended across users |
+| Catalog Coverage | Proportion of the item catalog recommended across users |
 
-Additional diagnostics examine recommendation-list completion and how much of the catalog is reachable by the model.
+Additional diagnostics examine recommendation-list completion and the extent of the catalog reachable by the model.
 
 ### Current Baseline Results
 
 The current baseline uses the following configuration:
 
 | Parameter | Value |
-| --- | ---: |
+|---|---:|
 | `n_neighbours` | 5 |
 | `min_co_ratings` | 2 |
 
 Recorded evaluation results:
 
 | Metric | K = 5 | K = 10 | K = 20 |
-| --- | ---: | ---: | ---: |
+|---|---:|---:|---:|
 | Precision@K | 0.0616 | 0.0587 | 0.0624 |
 | Recall@K | 0.0253 | 0.0500 | 0.1061 |
 | NDCG@K | 0.0675 | 0.0707 | 0.0899 |
-| Catalog coverage | 49.43% | 62.01% | 71.40% |
+| Catalog Coverage | 49.43% | 62.01% | 71.40% |
 
-These results are a reference point for the current evaluation setup, not a claim that the model is production-ready or universally optimal.
+These results provide a reference point for the current evaluation setup. They are not a claim that the model is production-ready or universally optimal.
 
 ## Running the Inference API
 
@@ -213,47 +291,59 @@ http://localhost:8000
 ### API Endpoints
 
 | Endpoint | Method | Description |
-| --- | --- | --- |
+|---|---|---|
 | `/health` | GET | Check API and model readiness |
 | `/recommend/{user_id}` | GET | Generate movie recommendations |
 | `/docs` | GET | Interactive Swagger API documentation |
 
-Example recommendation request:
+### Example Requests
+
+Get five recommendations for user 50:
 
 ```text
 http://localhost:8000/recommend/50?n=5
 ```
 
-Example health check:
+Check API health:
 
 ```text
 http://localhost:8000/health
 ```
 
+Open interactive API documentation:
+
+```text
+http://localhost:8000/docs
+```
+
+The API also handles invalid requests and unknown users through appropriate HTTP error responses.
+
 ## Running with Docker
 
-Docker packages the application, its runtime dependencies, and the serialized model into a container image.
+Docker packages the application and its runtime dependencies into a container image.
+
+The Docker image includes the serialized model artifact, so the artifact must exist before building the image.
 
 ### Prerequisites
 
 - Docker Desktop or Docker Engine
-- Docker Compose
+- A locally generated `artifacts/cf_model.joblib`
 
-### Build the Docker image
+### 1. Build the Docker image
 
 From the project root:
 
 ```powershell
-docker build -t recommendation-engine:0.1.0 .
+docker build -t recommendation-engine:0.1.2 .
 ```
 
-### Run the container
+### 2. Run the container
 
 ```powershell
-docker run -d --name re-api -p 8000:8000 recommendation-engine:0.1.0
+docker run -d --name re-api -p 8000:8000 recommendation-engine:0.1.2
 ```
 
-### Verify the API
+### 3. Verify the API
 
 Health check:
 
@@ -261,7 +351,7 @@ Health check:
 Invoke-RestMethod http://localhost:8000/health
 ```
 
-Recommendations:
+Get recommendations:
 
 ```powershell
 Invoke-RestMethod "http://localhost:8000/recommend/50?n=5"
@@ -273,13 +363,13 @@ Swagger documentation:
 http://localhost:8000/docs
 ```
 
-### View container logs
+### 4. View container logs
 
 ```powershell
 docker logs re-api
 ```
 
-### Stop and remove the container
+### 5. Stop and remove the container
 
 ```powershell
 docker stop re-api
@@ -290,13 +380,15 @@ docker rm re-api
 
 Docker Compose provides a convenient way to build, start, and manage the application.
 
+Ensure the model artifact exists before starting the application.
+
 Build the image and start the application:
 
 ```powershell
 docker compose up -d --build
 ```
 
-Check the running services:
+Check running services:
 
 ```powershell
 docker compose ps
@@ -320,7 +412,7 @@ Start existing stopped containers:
 docker compose start
 ```
 
-Stop and remove the containers and default network:
+Stop and remove containers and the default network:
 
 ```powershell
 docker compose down
@@ -328,15 +420,40 @@ docker compose down
 
 The Docker image and local project files remain available after running `docker compose down`.
 
-## Testing
+## Testing and Continuous Integration
 
-Automated tests cover model behavior, evaluation metrics, validation errors, model persistence, MLflow tracking, and API functionality.
+The project uses pytest for automated testing and GitHub Actions for continuous integration.
 
-Run the full test suite:
+The test suite covers:
+
+- Collaborative filtering model behavior.
+- Evaluation metrics and recommendation diagnostics.
+- Data validation.
+- Model persistence and loading.
+- MLflow experiment tracking.
+- FastAPI endpoints and error handling.
+
+Run the full test suite locally:
 
 ```bash
-pytest -q
+python -m pytest -v
 ```
+
+### GitHub Actions CI
+
+The CI workflow automatically runs on pushes and pull requests targeting the `main` branch.
+
+The test matrix covers:
+
+| Operating System | Python Versions |
+|---|---|
+| Ubuntu | 3.13, 3.14 |
+| Windows | 3.13, 3.14 |
+| macOS | 3.13, 3.14 |
+
+**Total: 6 CI configurations.**
+
+The workflow checks dependency installation and runs the automated test suite across all supported CI environments.
 
 ## Current Limitations
 
@@ -344,19 +461,26 @@ pytest -q
 - Recommendations depend on the rating data available to the model.
 - Evaluation results depend on the dataset, train/test split, and relevance definition.
 - The current API loads a serialized model during application startup.
-- Operational monitoring and production deployment infrastructure are not yet implemented.
+- Production monitoring, authentication, and cloud deployment infrastructure are not implemented.
+- The model artifact must be generated separately and is not committed to the repository.
 
-## Roadmap
+## Future Improvements
 
-Potential future improvements include:
+Potential areas for further development include:
 
-- CI/CD pipeline for automated testing and image builds
-- API performance and operational monitoring
-- Cloud deployment
-- Model versioning and deployment management
-- Improved production-readiness and observability
+- API performance and operational monitoring.
+- Cloud deployment.
+- Model versioning and deployment management.
+- Improved observability and production-readiness.
+- Additional recommendation approaches and model comparisons.
 
-## Author **--Moazzam Matin--**
+## Author
+
+**Moazzam Matin**
 
 - GitHub: [Moazzam-Matin](https://github.com/Moazzam-Matin)
-- Repository: [recommendation-engine](https://github.com/Moazzam-Matin/recommendation-engine)
+- Repository: [Recommendation Engine](https://github.com/Moazzam-Matin/recommendation-engine)
+
+---
+
+*Built as a practical demonstration of machine learning engineering and MLOps workflows.*
